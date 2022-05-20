@@ -9,25 +9,29 @@ const {
 const { getAbi, getPoolImmutables } = require('./helpers');
 
 require('dotenv').config();
-const INFURA_URL = process.env.INFURA_URL;
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const ARBITRUM_PROVIDER_URL = process.env.ARBITRUM_PROVIDER_URL;
 
-const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
+const provider = new ethers.providers.JsonRpcProvider(ARBITRUM_PROVIDER_URL);
 
-const poolAddress = '0xcbcdf9626bc03e24f779434178a73a0b4bad62ed';
+// WBTC/ETH, 0.05% return with fee 500, get in info.uniswap.org
+const poolAddress = '0x2f5e87c9312fa29aed5c179e456625d79015299c';
 
+// https://docs.uniswap.org/protocol/reference/deployments
 const quoterAddress = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6';
 
 const getPrice = async (inputAmount) => {
+  // init poolContract
   const poolContract = new ethers.Contract(
     poolAddress,
     IUniswapV3PoolABI,
     provider
   );
-
+  //WBTC
   const tokenAddress0 = await poolContract.token0();
+  //ETH
   const tokenAddress1 = await poolContract.token1();
 
+  //get abi first, so we can init contract next
   const tokenAbi0 = await getAbi(tokenAddress0);
   const tokenAbi1 = await getAbi(tokenAddress1);
 
@@ -42,10 +46,18 @@ const getPrice = async (inputAmount) => {
     provider
   );
 
-  const tokenSymbol0 = await tokenContract0.symbol();
-  const tokenSymbol1 = await tokenContract1.symbol();
-  const tokenDecimals0 = await tokenContract0.decimals();
-  const tokenDecimals1 = await tokenContract1.decimals();
+  //I found the problem for anyone else using a different pool address. I was using the WETH/USDC pool but the USDC side was using a proxy contract and didn't have the decimals and symbols functions in the main contract. Setting these values manually made the whole thing work.Just look at the respective addresses in the pool and make sure the methods line up
+
+  //When use arbitrum, you can see the same pool on the ethereum mainnet
+
+  // const tokenSymbol0 = await tokenContract0.symbol();
+  const tokenSymbol0 = 'WBTC';
+  // const tokenSymbol1 = await tokenContract1.symbol();
+  const tokenSymbol1 = 'ETH';
+  // const tokenDecimals0 = await tokenContract0.decimals();
+  const tokenDecimals0 = 8;
+  // const tokenDecimals1 = await tokenContract1.decimals();
+  const tokenDecimals1 = 18;
 
   const quoterContract = new ethers.Contract(
     quoterAddress,
@@ -63,7 +75,7 @@ const getPrice = async (inputAmount) => {
   const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
     immutables.token0,
     immutables.token1,
-    immutables.fee,
+    immutables.fee, //500
     amountIn,
     0
   );
@@ -77,4 +89,5 @@ const getPrice = async (inputAmount) => {
   console.log('=========');
 };
 
+// how many ETH that one WBTC worth
 getPrice(1);
