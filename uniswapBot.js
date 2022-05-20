@@ -67,6 +67,7 @@ const getPrice = async (inputAmount) => {
 
   const immutables = await getPoolImmutables(poolContract);
 
+  // https://docs.uniswap.org/protocol/reference/periphery/lens/QuoterV2
   const amountIn = ethers.utils.parseUnits(
     inputAmount.toString(),
     tokenDecimals0
@@ -87,7 +88,35 @@ const getPrice = async (inputAmount) => {
     `${inputAmount} ${tokenSymbol0} can be swapped for ${amountOut} ${tokenSymbol1}`
   );
   console.log('=========');
+
+  /////////////////////////
+
+  const amountEthIn = ethers.utils.parseUnits(
+    inputAmount.toString(),
+    tokenDecimals1
+  );
+
+  const quotedEthAmountOut =
+    await quoterContract.callStatic.quoteExactOutputSingle(
+      immutables.token0,
+      immutables.token1,
+      immutables.fee, //500
+      amountEthIn,
+      0
+    );
+
+  const amountBtcOut = ethers.utils.formatUnits(
+    quotedEthAmountOut,
+    tokenDecimals0
+  );
+
+  console.log('=========');
+  console.log(
+    `${inputAmount} ${tokenSymbol1} can be swapped for ${amountBtcOut} ${tokenSymbol0}`
+  );
+  console.log('=========');
 };
 
 // how many ETH that one WBTC worth
+// how many WBTC that one ETH worth
 getPrice(1);
