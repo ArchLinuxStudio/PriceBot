@@ -14,7 +14,7 @@ const ARBITRUM_PROVIDER_URL = process.env.ARBITRUM_PROVIDER_URL;
 const provider = new ethers.providers.JsonRpcProvider(ARBITRUM_PROVIDER_URL);
 
 // WBTC/ETH, 0.05% return with fee 500, get in info.uniswap.org
-const poolAddress = '0x2f5e87c9312fa29aed5c179e456625d79015299c';
+const poolAddress = '0x2f5e87C9312fa29aed5c179E456625D79015299c';
 
 // https://docs.uniswap.org/protocol/reference/deployments
 const quoterAddress = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6';
@@ -35,20 +35,20 @@ const getPrice = async (inputAmount) => {
   const tokenAbi0 = await getAbi(tokenAddress0);
   const tokenAbi1 = await getAbi(tokenAddress1);
 
-  const tokenContract0 = new ethers.Contract(
-    tokenAddress0,
-    tokenAbi0,
-    provider
-  );
-  const tokenContract1 = new ethers.Contract(
-    tokenAddress1,
-    tokenAbi1,
-    provider
-  );
+  // const tokenContract0 = new ethers.Contract(
+  //   tokenAddress0,
+  //   tokenAbi0,
+  //   provider
+  // );
+  // const tokenContract1 = new ethers.Contract(
+  //   tokenAddress1,
+  //   tokenAbi1,
+  //   provider
+  // );
 
   //I found the problem for anyone else using a different pool address. I was using the WETH/USDC pool but the USDC side was using a proxy contract and didn't have the decimals and symbols functions in the main contract. Setting these values manually made the whole thing work.Just look at the respective addresses in the pool and make sure the methods line up
 
-  //When use arbitrum, you can see the same pool on the ethereum mainnet
+  //When use arbitrum, you can see the same pool on the ethereum mainnet to get decimal.
 
   // const tokenSymbol0 = await tokenContract0.symbol();
   const tokenSymbol0 = 'WBTC';
